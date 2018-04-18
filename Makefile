@@ -114,7 +114,7 @@ util-linux/out: util-linux/conf
 	mkdir -pv util-linux/out/root
 	cd util-linux/conf && $(MAKE) install DESTDIR=$(DESTDIR7)
 
-partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out
+partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys}
 	cd partdirs/root && ln -s lib lib64
 	cp -av linux/out/boot partdirs/
