@@ -1,5 +1,3 @@
-all: sl2.gpt
-
 linux/src:
 	mkdir -pv linux/src
 	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.16.1.tar.xz
@@ -37,7 +35,7 @@ libcap/src:
 	cd libcap && tar xf libcap-*.xz -C src --strip-components 1
 	cd libcap && rm libcap-*.xz
 libcap/conf: libcap/src
-	-sudo pacman --noconfirm -Rsnc gperf
+	sudo pacman --noconfirm -Rsnc gperf || echo meh
 	cp -av libcap/src libcap/conf
 	cd libcap/conf && sed -i '/install.*STALIBNAME/d' libcap/Makefile && $(MAKE)
 	sudo pacman --noconfirm -S gperf
@@ -67,7 +65,7 @@ ncurses/src:
 	cd ncurses && rm ncurses-*.gz
 ncurses/conf: ncurses/src
 	mkdir -pv ncurses/conf
-	cd ncurses/conf && ../src/configure --prefix= --enable-widec --without-normal --with-shared --woithout-debug
+	cd ncurses/conf && ../src/configure --prefix= --enable-widec --without-normal --with-shared --without-debug
 	cd ncurses/conf && $(MAKE)
 ncurses/out: ncurses/conf
 	$(eval DESTDIR := $(shell pwd)/ncurses/out/root/)
