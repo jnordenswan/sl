@@ -20,14 +20,14 @@ glibc/src:
 	cd glibc && tar xf glibc-*.xz -C src --strip-components 1
 	cd glibc && rm glibc-*.xz
 glibc/conf: glibc/src linux/out
-	$(eval INCLUDE := $(shell cd linux/out/root/include && pwd))
+	$(eval INCLUDE1 := $(shell cd linux/out/root/include && pwd))
 	mkdir -pv glibc/conf
-	cd glibc/conf && ../src/configure --prefix= --enable-kernel=4.15 --disable-profile --with-headers=$(INCLUDE)
+	cd glibc/conf && ../src/configure --prefix= --enable-kernel=4.15 --disable-profile --with-headers=$(INCLUDE1)
 	cd glibc/conf && $(MAKE)
 glibc/out: glibc/conf
-	$(eval DESTDIR := $(shell pwd)/glibc/out/root)
+	$(eval DESTDIR1 := $(shell pwd)/glibc/out/root)
 	mkdir -pv glibc/out/root
-	export DESTDIR=$(DESTDIR) && cd glibc/conf && $(MAKE) install
+	export DESTDIR=$(DESTDIR1) && cd glibc/conf && $(MAKE) install
 
 libcap/src:
 	mkdir -pv libcap/src
@@ -35,14 +35,13 @@ libcap/src:
 	cd libcap && tar xf libcap-*.xz -C src --strip-components 1
 	cd libcap && rm libcap-*.xz
 libcap/conf: libcap/src
-	sudo pacman --noconfirm -Rsnc gperf || echo meh
 	cp -av libcap/src libcap/conf
-	cd libcap/conf && sed -i '/install.*STALIBNAME/d' libcap/Makefile && $(MAKE)
-	sudo pacman --noconfirm -S gperf
+	cd libcap/conf && sed -i '/install.*STALIBNAME/d' libcap/Makefile
+	cd libcap/conf && $(MAKE)
 libcap/out: libcap/conf
-	$(eval DESTDIR := $(shell pwd)/libcap/out/root)
+	$(eval DESTDIR2 := $(shell pwd)/libcap/out/root)
 	mkdir -pv libcap/out/root
-	cd libcap/conf && make RAISE_SETFCAP=no lib=lib prefix= install DESTDIR=$(DESTDIR)
+	cd libcap/conf && make RAISE_SETFCAP=no lib=lib prefix= install DESTDIR=$(DESTDIR2)
 
 readline/src:
 	mkdir -pv readline/src
@@ -54,9 +53,9 @@ readline/conf: readline/src
 	cd readline/conf && ../src/configure --prefix=
 	cd readline/conf && $(MAKE)
 readline/out: readline/conf
-	$(eval DESTDIR := $(shell pwd)/readline/out/root/)
+	$(eval DESTDIR3 := $(shell pwd)/readline/out/root/)
 	mkdir -pv readline/out/root
-	cd readline/conf && $(MAKE) install DESTDIR=$(DESTDIR)
+	cd readline/conf && $(MAKE) install DESTDIR=$(DESTDIR3)
 
 ncurses/src:
 	mkdir -pv ncurses/src
@@ -68,9 +67,9 @@ ncurses/conf: ncurses/src
 	cd ncurses/conf && ../src/configure --prefix= --enable-widec --without-normal --with-shared --without-debug
 	cd ncurses/conf && $(MAKE)
 ncurses/out: ncurses/conf
-	$(eval DESTDIR := $(shell pwd)/ncurses/out/root/)
+	$(eval DESTDIR4 := $(shell pwd)/ncurses/out/root/)
 	mkdir -pv ncurses/out/root
-	cd ncurses/conf && $(MAKE) install DESTDIR=$(DESTDIR)
+	cd ncurses/conf && $(MAKE) install DESTDIR=$(DESTDIR4)
 
 bash/src:
 	mkdir -pv bash/src
@@ -82,23 +81,24 @@ bash/conf: bash/src readline/out
 	cd bash/conf && ../src/configure --prefix= --without-bash-malloc --with-installed-readline=../../readline/out/root
 	cd bash/conf && $(MAKE)
 bash/out: bash/conf
-	$(eval DESTDIR := $(shell pwd)/bash/out/root/)
+	$(eval DESTDIR5 := $(shell pwd)/bash/out/root/)
 	mkdir -pv bash/out/root
-	cd bash/conf && $(MAKE) install DESTDIR=$(DESTDIR)
+	cd bash/conf && $(MAKE) install DESTDIR=$(DESTDIR5)
 
 coreutils/src:
-	mkdir -pv coreutils
-	cd coreutils && git clone --depth 1 git://git.sv.gnu.org/coreutils
-	cd coreutils && mv coreutils src
-	cd coreutils/src && ./bootstrap
+	mkdir -pv coreutils/src
+	cd coreutils && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/coreutils/coreutils-8.29.tar.xz
+	cd coreutils && tar xf coreutils-*.xz -C src --strip-components 1
+	cd coreutils && rm coreutils-*.xz
+	cd coreutils/src && autoreconf -fiv
 coreutils/conf: coreutils/src
 	mkdir -pv coreutils/conf
-	cd coreutils/conf && ../src/configure --prefix= --without-libcap
+	cd coreutils/conf && ../src/configure --prefix=
 	cd coreutils/conf && $(MAKE)
 coreutils/out: coreutils/conf
-	$(eval DESTDIR := $(shell pwd)/coreutils/out/root/)
+	$(eval DESTDIR6 := $(shell pwd)/coreutils/out/root/)
 	mkdir -pv coreutils/out/root
-	cd coreutils/conf && $(MAKE) install DESTDIR=$(DESTDIR)
+	cd coreutils/conf && $(MAKE) install DESTDIR=$(DESTDIR6)
 
 partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys}
