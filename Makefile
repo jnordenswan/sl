@@ -100,6 +100,20 @@ coreutils/out: coreutils/conf
 	mkdir -pv coreutils/out/root
 	cd coreutils/conf && $(MAKE) install DESTDIR=$(DESTDIR6)
 
+util-linux/src:
+	mkdir -pv util-linux/src
+	cd util-linux && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.tar.xz
+	cd util-linux && tar xf util-linux-*.xz -C src --strip-components 1
+	cd util-linux && rm util-linux-*.xz
+util-linux/conf: util-linux/src
+	mkdir -pv util-linux/conf
+	cd util-linux/conf && ../src/configure --prefix= --disable-static --without-python --without-systemd --without-systemdsystemunitdir --disable-makeinstall-chown
+	cd util-linux/conf && $(MAKE)
+util-linux/out: util-linux/conf
+	$(eval DESTDIR7 := $(shell pwd)/util-linux/out/root/)
+	mkdir -pv util-linux/out/root
+	cd util-linux/conf && $(MAKE) install DESTDIR=$(DESTDIR7)
+
 partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys}
 	cd partdirs/root && ln -s lib lib64
