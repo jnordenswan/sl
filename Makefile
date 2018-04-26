@@ -28,6 +28,7 @@ glibc/out: glibc/conf
 	$(eval DESTDIR1 := $(shell pwd)/glibc/out/root)
 	mkdir -pv glibc/out/root
 	export DESTDIR=$(DESTDIR1) && cd glibc/conf && $(MAKE) install
+	cd glibc && touch out
 
 libcap/src:
 	mkdir -pv libcap/src
@@ -70,6 +71,7 @@ ncurses/out: ncurses/conf
 	$(eval DESTDIR4 := $(shell pwd)/ncurses/out/root/)
 	mkdir -pv ncurses/out/root
 	cd ncurses/conf && $(MAKE) install DESTDIR=$(DESTDIR4)
+	cd ncurses && touch out
 
 bash/src:
 	mkdir -pv bash/src
