@@ -1,6 +1,6 @@
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.16.1.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.14.79.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
@@ -16,13 +16,13 @@ linux/out: linux/conf
 
 glibc/src:
 	mkdir -pv glibc/src
-	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.27.tar.xz
+	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.28.tar.xz
 	cd glibc && tar xf glibc-*.xz -C src --strip-components 1
 	cd glibc && rm glibc-*.xz
 glibc/conf: glibc/src linux/out
 	$(eval INCLUDE1 := $(shell cd linux/out/root/include && pwd))
 	mkdir -pv glibc/conf
-	cd glibc/conf && ../src/configure --prefix= --enable-kernel=4.15 --disable-profile --with-headers=$(INCLUDE1)
+	cd glibc/conf && ../src/configure --prefix= --enable-kernel=4.14 --disable-profile --with-headers=$(INCLUDE1)
 	cd glibc/conf && $(MAKE)
 glibc/out: glibc/conf
 	$(eval DESTDIR1 := $(shell pwd)/glibc/out/root)
@@ -89,7 +89,7 @@ bash/out: bash/conf
 
 coreutils/src:
 	mkdir -pv coreutils/src
-	cd coreutils && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/coreutils/coreutils-8.29.tar.xz
+	cd coreutils && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/coreutils/coreutils-8.30.tar.xz
 	cd coreutils && tar xf coreutils-*.xz -C src --strip-components 1
 	cd coreutils && rm coreutils-*.xz
 	cd coreutils/src && autoreconf -fiv
