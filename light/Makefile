@@ -39,9 +39,8 @@ busybox/out: busybox/conf
 	cd busybox/conf && $(MAKE) && $(MAKE) install
 	touch busybox/out
 
-partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out
+partdirs: linux/out musl/out busybox/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys}
-	cd partdirs/root && ln -s lib lib64
 	cp -av linux/out/boot partdirs/
 	cp -av */out/root partdirs/
 
