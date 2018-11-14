@@ -34,6 +34,10 @@ busybox/src:
 busybox/conf: busybox/src
 	mkdir -pv busybox/conf
 	cd busybox/conf && make KBUILD_SRC=../src -f ../src/Makefile allnoconfig
+	cp assets/busybox.conf busybox/conf/.config
+busybox/out: busybox/conf
+	cd busybox/conf && $(MAKE) && $(MAKE) install
+	touch busybox/out
 
 partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys}
