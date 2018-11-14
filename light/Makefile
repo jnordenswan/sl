@@ -26,6 +26,15 @@ musl/out: musl/conf
 	cd musl/conf && $(MAKE) && $(MAKE) install
 	cd musl && touch out
 
+busybox/src:
+	mkdir -pv busybox/src
+	cd busybox && wget -c -nv https://busybox.net/downloads/busybox-1.29.3.tar.bz2
+	cd busybox && tar xf busybox-*.tar.bz2 -C src --strip-components 1
+	cd busybox && rm busybox-*.tar.bz2
+busybox/conf: busybox/src
+	mkdir -pv busybox/conf
+	cd busybox/conf && make KBUILD_SRC=../src -f ../src/Makefile allnoconfig
+
 partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys}
 	cd partdirs/root && ln -s lib lib64
