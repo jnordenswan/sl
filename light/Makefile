@@ -8,11 +8,6 @@ linux/conf: linux/src
 	cd linux/src && $(MAKE) O=../conf x86_64_defconfig
 	cd linux/conf && ../src/scripts/kconfig/merge_config.sh .config ../../assets/linux.conf
 	cd linux/conf && $(MAKE)
-linux/out: linux/conf
-	mkdir -pv linux/out/{boot,root}
-	cp -av assets/startup.nsh linux/out/boot
-	cd linux/conf && INSTALL_PATH=../out/boot $(MAKE) install
-	cd linux/conf && $(MAKE) headers_install INSTALL_HDR_PATH=../out/root
 
 musl/src:
 	mkdir -pv musl/src
@@ -21,10 +16,7 @@ musl/src:
 	cd musl && rm musl-*.tar.gz
 musl/conf: musl/src
 	mkdir -pv musl/conf
-	cd musl/conf && ../src/configure --prefix=../out/root
-musl/out: musl/conf
-	cd musl/conf && $(MAKE) && $(MAKE) install
-	cd musl && touch out
+	cd musl/conf && ../src/configure --prefix=../../out/root
 
 busybox/src:
 	mkdir -pv busybox/src
@@ -35,20 +27,20 @@ busybox/conf: busybox/src
 	mkdir -pv busybox/conf
 	cd busybox/conf && make KBUILD_SRC=../src -f ../src/Makefile allnoconfig
 	cp assets/busybox.conf busybox/conf/.config
-busybox/out: busybox/conf
+
+out: linux/conf musl/conf busybox/conf
+	mkdir -pv out/{boot,root}
+	cp -av assets/startup.nsh out/boot
+	cd linux/conf && INSTALL_PATH=../../out/boot $(MAKE) install
+	cd linux/conf && $(MAKE) headers_install INSTALL_HDR_PATH=../../out/root
+	cd musl/conf && $(MAKE) && $(MAKE) install
 	cd busybox/conf && $(MAKE) && $(MAKE) install
-	touch busybox/out
 
-partdirs: linux/out musl/out busybox/out
-	mkdir -pv partdirs/root/{boot,dev,proc,sys}
-	cp -av linux/out/boot partdirs/
-	cp -av */out/root partdirs/
-
-sl2.gpt: partdirs
+sl2.gpt: out
 	dd if=/dev/zero of=sl2.esp bs=512 count=30720
 	mkfs.fat -F 16 sl2.esp
-	mcopy -s -i sl2.esp partdirs/boot/* ::/
-	mksquashfs partdirs/root/ sl2.sqsh -all-root
+	mcopy -s -i sl2.esp out/boot/* ::/
+	mksquashfs out/root/ sl2.sqsh -all-root
 	dd if=/dev/zero of=sl2.gpt bs=512 count=262144
 	sgdisk -og --disk-guid=R sl2.gpt
 	sgdisk -n 1:0:16M -c 1:"ESP Linux EFISTUB" -t 1:EF00 sl2.gpt
