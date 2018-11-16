@@ -18,26 +18,29 @@ musl/conf: musl/src
 	mkdir -pv musl/conf
 	cd musl/conf && ../src/configure --prefix=../../out/root
 
-busybox/src:
-	mkdir -pv busybox/src
-	cd busybox && wget -c -nv https://busybox.net/downloads/busybox-1.29.3.tar.bz2
-	cd busybox && tar xf busybox-*.tar.bz2 -C src --strip-components 1
-	cd busybox && rm busybox-*.tar.bz2
-busybox/conf: busybox/src
-	mkdir -pv busybox/conf
-	cd busybox/conf && make KBUILD_SRC=../src -f ../src/Makefile allnoconfig
-	cp assets/busybox.conf busybox/conf/.config
-
-out: linux/conf musl/conf busybox/conf
+out/sovereign: linux/conf musl/conf
 	mkdir -pv out/{boot,root}
 	cp -av assets/startup.nsh out/boot
 	cd linux/conf && INSTALL_PATH=../../out/boot $(MAKE) install
 	cd linux/conf && $(MAKE) headers_install INSTALL_HDR_PATH=../../out/root
 	cd musl/conf && $(MAKE) && $(MAKE) install
-	cd busybox/conf && $(MAKE) && $(MAKE) install
-	touch out
+	touch out/sovereign
 
-sl2.gpt: out
+busybox/src:
+	mkdir -pv busybox/src
+	cd busybox && wget -c -nv https://busybox.net/downloads/busybox-1.29.3.tar.bz2
+	cd busybox && tar xf busybox-*.tar.bz2 -C src --strip-components 1
+	cd busybox && rm busybox-*.tar.bz2
+busybox/conf: busybox/src out/sovereign
+	mkdir -pv busybox/conf
+	cd busybox/conf && make KBUILD_SRC=../src -f ../src/Makefile allnoconfig
+	cp assets/busybox.conf busybox/conf/.config
+
+out/vassal: out/sovereign busybox/conf
+	cd busybox/conf && $(MAKE) && $(MAKE) install
+	touch out/vassal
+
+sl2.gpt: out/vassal
 	dd if=/dev/zero of=sl2.esp bs=512 count=30720
 	mkfs.fat -F 16 sl2.esp
 	mcopy -s -i sl2.esp out/boot/* ::/
