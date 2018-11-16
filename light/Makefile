@@ -35,6 +35,7 @@ out: linux/conf musl/conf busybox/conf
 	cd linux/conf && $(MAKE) headers_install INSTALL_HDR_PATH=../../out/root
 	cd musl/conf && $(MAKE) && $(MAKE) install
 	cd busybox/conf && $(MAKE) && $(MAKE) install
+	touch out
 
 sl2.gpt: out
 	dd if=/dev/zero of=sl2.esp bs=512 count=30720
