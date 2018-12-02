@@ -1,6 +1,6 @@
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.14.79.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.14.85.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
