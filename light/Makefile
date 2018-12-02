@@ -33,7 +33,7 @@ busybox/src:
 	cd busybox && rm busybox-*.tar.bz2
 busybox/conf: busybox/src out/sovereign
 	mkdir -pv busybox/conf
-	cd busybox/conf && make KBUILD_SRC=../src -f ../src/Makefile allnoconfig
+	cd busybox/conf && $(MAKE) KBUILD_SRC=../src -f ../src/Makefile allnoconfig
 	cp assets/busybox.conf busybox/conf/.config
 
 out/vassal: out/sovereign busybox/conf
