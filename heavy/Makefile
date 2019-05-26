@@ -1,11 +1,11 @@
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.14.85.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.4.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
 	mkdir -pv linux/conf
-	cd linux/src && $(MAKE) O=../conf x86_64_defconfig
+	cd linux/src && $(MAKE) O=../conf tinyconfig
 	cd linux/conf && ../src/scripts/kconfig/merge_config.sh .config ../../assets/linux.conf
 	cd linux/conf && $(MAKE)
 linux/out: linux/conf
