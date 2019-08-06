@@ -1,6 +1,6 @@
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.4.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.2.6.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
@@ -16,7 +16,7 @@ linux/out: linux/conf
 
 glibc/src:
 	mkdir -pv glibc/src
-	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.28.tar.xz
+	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.30.tar.xz
 	cd glibc && tar xf glibc-*.xz -C src --strip-components 1
 	cd glibc && rm glibc-*.xz
 glibc/conf: glibc/src linux/out
@@ -32,7 +32,7 @@ glibc/out: glibc/conf
 
 libcap/src:
 	mkdir -pv libcap/src
-	cd libcap && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.25.tar.xz
+	cd libcap && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.27.tar.xz
 	cd libcap && tar xf libcap-*.xz -C src --strip-components 1
 	cd libcap && rm libcap-*.xz
 libcap/conf: libcap/src
@@ -46,7 +46,7 @@ libcap/out: libcap/conf
 
 readline/src:
 	mkdir -pv readline/src
-	cd readline && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/readline/readline-7.0.tar.gz
+	cd readline && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/readline/readline-8.0.tar.gz
 	cd readline && tar xf readline-*.gz -C src --strip-components 1
 	cd readline && rm readline-*.gz
 readline/conf: readline/src
@@ -75,7 +75,7 @@ ncurses/out: ncurses/conf
 
 bash/src:
 	mkdir -pv bash/src
-	cd bash && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/bash/bash-4.4.18.tar.gz
+	cd bash && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/bash/bash-5.0.tar.gz
 	cd bash && tar xf bash-*.gz -C src --strip-components 1
 	cd bash && rm bash-*.gz
 bash/conf: bash/src readline/out
@@ -104,7 +104,7 @@ coreutils/out: coreutils/conf
 
 util-linux/src:
 	mkdir -pv util-linux/src
-	cd util-linux && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.tar.xz
+	cd util-linux && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.34/util-linux-2.34.tar.xz
 	cd util-linux && tar xf util-linux-*.xz -C src --strip-components 1
 	cd util-linux && rm util-linux-*.xz
 util-linux/conf: util-linux/src
