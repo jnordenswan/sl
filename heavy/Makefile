@@ -1,11 +1,11 @@
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.2.6.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.14.14.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
 	mkdir -pv linux/conf
-	cd linux/src && $(MAKE) O=../conf tinyconfig
+	cd linux/src && $(MAKE) O=../conf defconfig
 	cd linux/conf && ../src/scripts/kconfig/merge_config.sh .config ../../assets/linux.conf
 	cd linux/conf && $(MAKE)
 linux/out: linux/conf
@@ -16,13 +16,13 @@ linux/out: linux/conf
 
 glibc/src:
 	mkdir -pv glibc/src
-	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.30.tar.xz
+	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.34.tar.xz
 	cd glibc && tar xf glibc-*.xz -C src --strip-components 1
 	cd glibc && rm glibc-*.xz
 glibc/conf: glibc/src linux/out
 	$(eval INCLUDE1 := $(shell cd linux/out/root/include && pwd))
 	mkdir -pv glibc/conf
-	cd glibc/conf && ../src/configure --prefix= --enable-kernel=4.14 --disable-profile --with-headers=$(INCLUDE1)
+	cd glibc/conf && ../src/configure --prefix= --enable-kernel=5.14 --disable-profile --with-headers=$(INCLUDE1)
 	cd glibc/conf && $(MAKE)
 glibc/out: glibc/conf
 	$(eval DESTDIR1 := $(shell pwd)/glibc/out/root)
@@ -32,7 +32,7 @@ glibc/out: glibc/conf
 
 libcap/src:
 	mkdir -pv libcap/src
-	cd libcap && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.27.tar.xz
+	cd libcap && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.60.tar.xz
 	cd libcap && tar xf libcap-*.xz -C src --strip-components 1
 	cd libcap && rm libcap-*.xz
 libcap/conf: libcap/src
@@ -46,7 +46,7 @@ libcap/out: libcap/conf
 
 readline/src:
 	mkdir -pv readline/src
-	cd readline && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/readline/readline-8.0.tar.gz
+	cd readline && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/readline/readline-8.1.tar.gz
 	cd readline && tar xf readline-*.gz -C src --strip-components 1
 	cd readline && rm readline-*.gz
 readline/conf: readline/src
@@ -60,7 +60,7 @@ readline/out: readline/conf
 
 ncurses/src:
 	mkdir -pv ncurses/src
-	cd ncurses && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/ncurses/ncurses-6.1.tar.gz
+	cd ncurses && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
 	cd ncurses && tar xf ncurses-*.gz -C src --strip-components 1
 	cd ncurses && rm ncurses-*.gz
 ncurses/conf: ncurses/src
@@ -75,7 +75,7 @@ ncurses/out: ncurses/conf
 
 bash/src:
 	mkdir -pv bash/src
-	cd bash && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/bash/bash-5.0.tar.gz
+	cd bash && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/bash/bash-5.1.8.tar.gz
 	cd bash && tar xf bash-*.gz -C src --strip-components 1
 	cd bash && rm bash-*.gz
 bash/conf: bash/src readline/out
@@ -89,7 +89,7 @@ bash/out: bash/conf
 
 coreutils/src:
 	mkdir -pv coreutils/src
-	cd coreutils && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/coreutils/coreutils-8.30.tar.xz
+	cd coreutils && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/coreutils/coreutils-9.0.tar.xz
 	cd coreutils && tar xf coreutils-*.xz -C src --strip-components 1
 	cd coreutils && rm coreutils-*.xz
 	cd coreutils/src && autoreconf -fiv
@@ -104,7 +104,7 @@ coreutils/out: coreutils/conf
 
 util-linux/src:
 	mkdir -pv util-linux/src
-	cd util-linux && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.34/util-linux-2.34.tar.xz
+	cd util-linux && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.37/util-linux-2.37.2.tar.xz
 	cd util-linux && tar xf util-linux-*.xz -C src --strip-components 1
 	cd util-linux && rm util-linux-*.xz
 util-linux/conf: util-linux/src
