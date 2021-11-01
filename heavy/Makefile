@@ -116,8 +116,58 @@ util-linux/out: util-linux/conf
 	mkdir -pv util-linux/out/root
 	cd util-linux/conf && $(MAKE) install DESTDIR=$(DESTDIR7)
 
-partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out
-	mkdir -pv partdirs/root/{boot,dev,proc,sys}
+udev/src:
+	mkdir -pv udev/src
+	cd udev && wget -c -nv https://github.com/eudev-project/eudev/archive/refs/tags/v3.2.10.tar.gz
+	cd udev && tar xf *.tar.gz -C src --strip-components 1
+	cd udev && rm *.tar.gz
+	-cd udev/src && ./autogen.sh 
+udev/conf: udev/src
+	mkdir -pv udev/conf
+	cd udev/conf && ../src/configure --prefix= --disable-kmod
+	cd udev/conf && $(MAKE)
+udev/out: udev/conf
+	$(eval DESTDIR8 := $(shell pwd)/udev/out/root/)
+	mkdir -pv udev/out/root
+	cd udev/conf && $(MAKE) install DESTDIR=$(DESTDIR8)
+	cd udev && touch out
+
+acl/src:
+	mkdir -pv acl/src
+	cd acl && wget -c -nv https://git.savannah.nongnu.org/cgit/acl.git/snapshot/acl-2.3.1.tar.gz
+	cd acl && tar xf *.tar.gz -C src --strip-components 1
+	cd acl && rm *.tar.gz
+	cd acl/src && ./autogen.sh
+acl/conf: acl/src
+	mkdir -pv acl/conf
+	cd acl/conf && ../src/configure --prefix=
+	cd acl/conf && $(MAKE)
+acl/out: acl/conf
+	$(eval DESTDIR9 := $(shell pwd)/acl/out/root/)
+	mkdir -pv acl/out/root
+	cd acl/conf && $(MAKE) install DESTDIR=$(DESTDIR9)
+
+attr/src:
+	mkdir -pv attr/src
+	cd attr && wget -c -nv https://git.savannah.nongnu.org/cgit/attr.git/snapshot/attr-2.5.1.tar.gz
+	cd attr && tar xf *.tar.gz -C src --strip-components 1
+	cd attr && rm *.tar.gz
+	cd attr/src && ./autogen.sh
+attr/conf: attr/src
+	mkdir -pv attr/conf
+	cd attr/conf && ../src/configure --prefix=
+	cd attr/conf && $(MAKE)
+attr/out: attr/conf
+	$(eval DESTDIR10 := $(shell pwd)/attr/out/root/)
+	mkdir -pv attr/out/root
+	cd attr/conf && $(MAKE) install DESTDIR=$(DESTDIR10)
+
+root/out:
+	mkdir -pv root/out/root/root
+	cd root/out/root/root && printf -- 'alias dir="ls -lhAtr --color=auto --group-directories-first"\nmount proc -t proc /proc\nmount sys -t sysfs /sys\nmount -o ro /dev/sda1 /boot\nmount tmpfs -t tmpfs /tmp\nmkdir /tmp/{run-upper,run-work,etc-upper,etc-work}\nmount -t overlay overlay -o lowerdir=/run,upperdir=/tmp/run-upper,workdir=/tmp/run-work /run\nmount -t overlay overlay -o lowerdir=/etc,upperdir=/tmp/etc-upper,workdir=/tmp/etc-work /etc\nudevadm hwdb --update\nudevadm settle\nudevd -D &\n' > init.sh
+
+partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out udev/out acl/out attr/out root/out
+	mkdir -pv partdirs/root/{boot,dev,proc,sys,mnt,tmp,run}
 	cd partdirs/root && ln -s lib lib64
 	cp -av linux/out/boot partdirs/
 	cp -av */out/root partdirs/
@@ -126,7 +176,7 @@ sl2.gpt: partdirs
 	dd if=/dev/zero of=sl2.esp bs=512 count=30720
 	mkfs.fat -F 16 sl2.esp
 	mcopy -s -i sl2.esp partdirs/boot/* ::/
-	mksquashfs partdirs/root/ sl2.sqsh -all-root
+	mksquashfs partdirs/root/ sl2.sqsh -all-root -b 1M
 	dd if=/dev/zero of=sl2.gpt bs=512 count=262144
 	sgdisk -og --disk-guid=R sl2.gpt
 	sgdisk -n 1:0:16M -c 1:"ESP Linux EFISTUB" -t 1:EF00 sl2.gpt
