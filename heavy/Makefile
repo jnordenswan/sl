@@ -1,6 +1,9 @@
+clean:
+	git clean -dfx
+
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.14.14.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
@@ -162,11 +165,52 @@ attr/out: attr/conf
 	mkdir -pv attr/out/root
 	cd attr/conf && $(MAKE) install DESTDIR=$(DESTDIR10)
 
+skarnet/src:
+	mkdir -pv skarnet/src
+	cd skarnet/src && wget -c -nv https://skarnet.org/software/skalibs/skalibs-2.11.0.0.tar.gz https://skarnet.org/software/execline/execline-2.8.1.0.tar.gz https://skarnet.org/software/s6/s6-2.11.0.0.tar.gz
+	# cd skalibs && tar xf *.tar.gz -C src --strip-components 1
+skarnet/conf: skarnet/src
+	mkdir -pv skarnet/conf
+	mkdir -pv skarnet/stage
+	$(eval SKASTAGE := $(shell pwd)/skarnet/stage/)
+	cd skarnet/conf && cat ../src/*.tar.gz | tar xfz - -i
+skarnet/stage: skarnet/conf
+	cd skarnet/conf/skalibs* && ./configure && $(MAKE) install DESTDIR=$(SKASTAGE)
+	cd skarnet/conf/execline* && ./configure --libdir=/usr/lib/skalibs --with-sysdeps=$(SKASTAGE)usr/lib/skalibs/sysdeps/ --with-include=$(SKASTAGE)usr/include/ --with-lib=$(SKASTAGE)lib/ && $(MAKE) install DESTDIR=$(SKASTAGE)
+	cd skarnet/conf/s6* && ./configure --with-sysdeps=$(SKASTAGE)usr/lib/skalibs/sysdeps/ --with-include=$(SKASTAGE)usr/include/ --with-lib=$(SKASTAGE)usr/lib/skalibs/ --with-dynlib=$(SKASTAGE)lib/ && $(MAKE) install DESTDIR=$(SKASTAGE)
+skarnet/out: skarnet/stage
+	cd skarnet && mv stage root && mkdir out && mv root out
+
+nano/src:
+	mkdir -pv nano/src
+	cd nano/src && wget -c -nv https://www.nano-editor.org/dist/v5/nano-5.9.tar.xz
+nano/conf: nano/src
+	mkdir -pv nano/conf
+	cd nano/src && tar xf *.tar.xz -C ../conf --strip-components=1
+	cd nano/conf && ./configure --prefix= --disable-libmagic
+nano/out: nano/conf
+	$(eval NANOROOT := $(shell pwd)/nano/stage/root/)
+	mkdir -pv nano/stage/root
+	cd nano/conf && $(MAKE) && $(MAKE) install DESTDIR=$(NANOROOT)
+	mv nano/stage nano/out
+
+zlib/src:
+	mkdir -pv zlib/src && cd zlib/src && wget -c -nv https://www.zlib.net/zlib-1.2.11.tar.xz
+zlib/conf: zlib/src
+	mkdir -pv zlib/conf
+	cd zlib/src && tar xf *.tar.xz -C ../conf --strip-components=1
+	cd zlib/conf && ./configure --prefix=
+zlib/out: zlib/conf
+	$(eval ZLIBROOT := $(shell pwd)/zlib/stage/root/)
+	mkdir -pv zlib/stage
+	cd zlib/conf && $(MAKE) && $(MAKE) install DESTDIR=$(ZLIBROOT)
+	mv zlib/stage zlib/out
+
 root/out:
 	mkdir -pv root/out/root/root
 	cd root/out/root/root && printf -- 'alias dir="ls -lhAtr --color=auto --group-directories-first"\nmount proc -t proc /proc\nmount sys -t sysfs /sys\nmount -o ro /dev/sda1 /boot\nmount tmpfs -t tmpfs /tmp\nmkdir /tmp/{run-upper,run-work,etc-upper,etc-work}\nmount -t overlay overlay -o lowerdir=/run,upperdir=/tmp/run-upper,workdir=/tmp/run-work /run\nmount -t overlay overlay -o lowerdir=/etc,upperdir=/tmp/etc-upper,workdir=/tmp/etc-work /etc\nudevadm hwdb --update\nudevadm settle\nudevd -D &\n' > init.sh
 
-partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out udev/out acl/out attr/out root/out
+partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out udev/out acl/out attr/out skarnet/out nano/out zlib/out root/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys,mnt,tmp,run}
 	cd partdirs/root && ln -s lib lib64
 	cp -av linux/out/boot partdirs/
