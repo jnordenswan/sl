@@ -3,7 +3,7 @@ clean:
 
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
@@ -16,6 +16,21 @@ linux/out: linux/conf
 	cp -av assets/startup.nsh linux/out/boot
 	cd linux/conf && INSTALL_PATH=../out/boot $(MAKE) install
 	cd linux/conf && $(MAKE) headers_install INSTALL_HDR_PATH=../out/root
+
+pam/src:
+	mkdir -pv pam/src
+	cd pam && wget -c -nv https://github.com/linux-pam/linux-pam/releases/download/v1.5.2/Linux-PAM-1.5.2.tar.xz
+	cd pam && tar xf Linux-PAM-*.tar.xz -C src --strip-components 1
+	cd pam && rm -v Linux-PAM-*.tar.xz
+pam/conf: pam/src
+	mkdir -pv pam/conf
+	cd pam/conf && ../src/configure --prefix=
+	cd pam/conf && $(MAKE)
+pam/out: pam/conf
+	$(eval DESTDIR0 := $(shell pwd)/pam/out/root)
+	mkdir -pv pam/out/root
+	export DESTDIR=$(DESTDIR0) && cd pam/conf && $(MAKE) install
+	cd pam && touch out
 
 glibc/src:
 	mkdir -pv glibc/src
@@ -35,7 +50,7 @@ glibc/out: glibc/conf
 
 libcap/src:
 	mkdir -pv libcap/src
-	cd libcap && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.60.tar.xz
+	cd libcap && wget -c -nv https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.62.tar.xz
 	cd libcap && tar xf libcap-*.xz -C src --strip-components 1
 	cd libcap && rm libcap-*.xz
 libcap/conf: libcap/src
@@ -63,7 +78,7 @@ readline/out: readline/conf
 
 ncurses/src:
 	mkdir -pv ncurses/src
-	cd ncurses && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
+	cd ncurses && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/ncurses/ncurses-6.3.tar.gz
 	cd ncurses && tar xf ncurses-*.gz -C src --strip-components 1
 	cd ncurses && rm ncurses-*.gz
 ncurses/conf: ncurses/src
@@ -210,7 +225,7 @@ root/out:
 	mkdir -pv root/out/root/root
 	cd root/out/root/root && printf -- 'alias dir="ls -lhAtr --color=auto --group-directories-first"\nmount proc -t proc /proc\nmount sys -t sysfs /sys\nmount -o ro /dev/sda1 /boot\nmount tmpfs -t tmpfs /tmp\nmkdir /tmp/{run-upper,run-work,etc-upper,etc-work}\nmount -t overlay overlay -o lowerdir=/run,upperdir=/tmp/run-upper,workdir=/tmp/run-work /run\nmount -t overlay overlay -o lowerdir=/etc,upperdir=/tmp/etc-upper,workdir=/tmp/etc-work /etc\nudevadm hwdb --update\nudevadm settle\nudevd -D &\n' > init.sh
 
-partdirs: linux/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out udev/out acl/out attr/out skarnet/out nano/out zlib/out root/out
+partdirs: linux/out pam/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out udev/out acl/out attr/out skarnet/out nano/out zlib/out root/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys,mnt,tmp,run}
 	cd partdirs/root && ln -s lib lib64
 	cp -av linux/out/boot partdirs/
