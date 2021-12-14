@@ -221,11 +221,23 @@ zlib/out: zlib/conf
 	cd zlib/conf && $(MAKE) && $(MAKE) install DESTDIR=$(ZLIBROOT)
 	mv zlib/stage zlib/out
 
+audit/src:
+	mkdir -pv audit/src && cd audit/src && wget -c -nv https://people.redhat.com/sgrubb/audit/audit-3.0.6.tar.gz
+audit/conf: audit/src
+	mkdir -pv audit/conf
+	cd audit/src && tar xf *.tar.gz -C ../conf --strip-components=1
+	cd audit/conf && ./configure --prefix= --without-python --without-python3 --without-golang
+audit/out: audit/conf
+	$(eval AUDITROOT := $(shell pwd)/audit/stage/root/)
+	mkdir -pv audit/stage
+	cd audit/conf && $(MAKE) && $(MAKE) install DESTDIR=$(AUDITROOT)
+	mv audit/stage audit/out
+
 root/out:
 	mkdir -pv root/out/root/root
 	cd root/out/root/root && printf -- 'alias dir="ls -lhAtr --color=auto --group-directories-first"\nmount proc -t proc /proc\nmount sys -t sysfs /sys\nmount -o ro /dev/sda1 /boot\nmount tmpfs -t tmpfs /tmp\nmkdir /tmp/{run-upper,run-work,etc-upper,etc-work}\nmount -t overlay overlay -o lowerdir=/run,upperdir=/tmp/run-upper,workdir=/tmp/run-work /run\nmount -t overlay overlay -o lowerdir=/etc,upperdir=/tmp/etc-upper,workdir=/tmp/etc-work /etc\nudevadm hwdb --update\nudevadm settle\nudevd -D &\n' > init.sh
 
-partdirs: linux/out pam/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out udev/out acl/out attr/out skarnet/out nano/out zlib/out root/out
+partdirs: linux/out pam/out glibc/out libcap/out readline/out ncurses/out bash/out coreutils/out util-linux/out udev/out acl/out attr/out skarnet/out nano/out zlib/out audit/out root/out
 	mkdir -pv partdirs/root/{boot,dev,proc,sys,mnt,tmp,run}
 	cd partdirs/root && ln -s lib lib64
 	cp -av linux/out/boot partdirs/
