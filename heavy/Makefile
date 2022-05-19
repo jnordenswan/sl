@@ -3,7 +3,7 @@ clean:
 
 linux/src:
 	mkdir -pv linux/src
-	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.xz
+	cd linux && wget -c -nv https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.17.9.tar.xz
 	cd linux && tar xf linux-*.xz -C src --strip-components 1
 	cd linux && rm -v linux-*.xz
 linux/conf: linux/src
@@ -34,7 +34,7 @@ pam/out: pam/conf
 
 glibc/src:
 	mkdir -pv glibc/src
-	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.34.tar.xz
+	cd glibc && wget -c -nv https://ftp.acc.umu.se/mirror/gnu.org/gnu/glibc/glibc-2.35.tar.xz
 	cd glibc && tar xf glibc-*.xz -C src --strip-components 1
 	cd glibc && rm glibc-*.xz
 glibc/conf: glibc/src linux/out
@@ -127,7 +127,7 @@ util-linux/src:
 	cd util-linux && rm util-linux-*.xz
 util-linux/conf: util-linux/src
 	mkdir -pv util-linux/conf
-	cd util-linux/conf && ../src/configure --prefix= --disable-static --without-python --without-systemd --without-systemdsystemunitdir --disable-makeinstall-chown
+	cd util-linux/conf && ../src/configure --prefix= --disable-static --without-cap-ng --without-python --without-systemd --without-systemdsystemunitdir --disable-makeinstall-chown
 	cd util-linux/conf && $(MAKE)
 util-linux/out: util-linux/conf
 	$(eval DESTDIR7 := $(shell pwd)/util-linux/out/root/)
@@ -210,10 +210,10 @@ nano/out: nano/conf
 	mv nano/stage nano/out
 
 zlib/src:
-	mkdir -pv zlib/src && cd zlib/src && wget -c -nv https://www.zlib.net/zlib-1.2.11.tar.xz
+	mkdir -pv zlib/src && cd zlib/src && wget -c -nv https://www.zlib.net/zlib-1.2.12.tar.gz
 zlib/conf: zlib/src
 	mkdir -pv zlib/conf
-	cd zlib/src && tar xf *.tar.xz -C ../conf --strip-components=1
+	cd zlib/src && tar xf *.tar.gz -C ../conf --strip-components=1
 	cd zlib/conf && ./configure --prefix=
 zlib/out: zlib/conf
 	$(eval ZLIBROOT := $(shell pwd)/zlib/stage/root/)
